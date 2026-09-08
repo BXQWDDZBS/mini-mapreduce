@@ -1,0 +1,30 @@
+# 这个 workflow 的名字叫 "Go Build Check"
+name: Go Build Check
+
+# 触发条件：每当有代码推送到 main 分支时，自动运行
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# 这里定义了“流水线”的具体任务
+jobs:
+  build:
+    # 在最新版的 Ubuntu Linux 虚拟机上运行（完全免费）
+    runs-on: ubuntu-latest
+
+    # 任务执行的步骤
+    steps:
+      # 步骤1：把你在 GitHub 上的代码拉取（Checkout）到虚拟机上
+      - uses: actions/checkout@v4
+
+      # 步骤2：安装 Go 语言环境（版本 1.21）
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      # 步骤3：编译代码（检查语法错误和缺少的依赖）
+      - name: Build
+        run: go build -v ./...
