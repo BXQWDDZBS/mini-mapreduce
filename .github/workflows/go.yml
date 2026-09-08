@@ -1,33 +1,44 @@
-# 这个 workflow 的名字叫 "Go Build Check"
+# 工作流名称：Go 构建检查
 name: Go Build Check
 
-# 触发条件：每当有代码推送到 main 分支时，自动运行
+# 触发条件：当推送到 main 分支，或对 main 分支发起 Pull Request 时触发
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
-# 这里定义了“流水线”的具体任务
+# 定义工作流中的任务（这里只有一个构建任务）
 jobs:
+  # 任务 ID：build
   build:
-    # 在最新版的 Ubuntu Linux 虚拟机上运行（完全免费）
+    # 运行环境：Ubuntu 最新版（GitHub 提供的 Linux 虚拟机）
     runs-on: ubuntu-latest
 
-    # 任务执行的步骤
+    # 任务执行的步骤列表
     steps:
-      # 步骤1：把你在 GitHub 上的代码拉取（Checkout）到虚拟机上
+      # 步骤 1：拉取仓库代码到工作区
+      # 使用 actions/checkout@v4 官方动作，将代码检出到 runner 的工作目录
       - uses: actions/checkout@v4
 
-      # 步骤2：安装 Go 语言环境（版本 1.21）
+      # 步骤 2：安装指定版本的 Go 环境
+      # 使用 actions/setup-go@v5 官方动作，配置 Go 工具链
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
+          # 指定 Go 版本为 1.21（可根据项目需要调整）
           go-version: '1.21'
 
-      # 步骤3：编译代码（检查语法错误和缺少的依赖）
+      # 步骤 3：调试输出 - 列出当前目录所有文件
+      # 目的是确认 go.mod 文件是否存在，便于排查依赖下载或构建问题
+      - name: List files for debugging
+        run: ls -la
+
+      # 步骤 4：下载依赖并执行构建
+      # 先运行 go mod download 下载 go.mod 中声明的所有依赖
+      # 再运行 go build -v ./... 构建当前模块下的所有包（-v 显示详细输出）
       - name: Build server
         run: go build -v server.go
-      
+
       - name: Build client
         run: go build -v client.go
